@@ -1,51 +1,40 @@
-const inputs = document.querySelectorAll('.controls input');
-const player = document.querySelector(".player");
-const video = player.querySelector(".viewer");
-const progress = player.querySelector(".progress");
-const progressBar = player.querySelector(".progress__filled");
-const toggle = player.querySelector(".toggle");
-const skipButtons = player.querySelectorAll("[data-skip]");
-const ranges = player.querySelectorAll(".player__slider");
 
-    function handleUpdate() {
-      const suffix = this.dataset.sizing || '';
-      document.documentElement.style.setProperty(`--${this.name}`, this.value + suffix);
-    }
-toggle.addEventListener("click", togglePlay);
+const video = document.getElementById('video-player');
+const toggle = document.querySelector('.toggle');
+const volumn_btn = document.querySelector('input[name=volume]');
+const playbackRate = document.querySelector('input[name=playbackRate]');
+const rewind_btn = document.querySelector('.rewind');
+const forward_btn = document.querySelector('.forward');
 
-    inputs.forEach(input => input.addEventListener('change', handleUpdate));
-    inputs.forEach(input => input.addEventListener('mousemove', handleUpdate));
-video.addEventListener("timeupdate", handlerProgress);
+// console.log(volumn_btn);
 
-for (let skip of skipButtons) {
-  skip.addEventListener("click", forwardOrBackward);
+let isVideoPlaying = false;
+toggle.onclick = () => {
+	if(isVideoPlaying) {
+		video.pause();
+	} else {
+		video.play();
+	}
+	isVideoPlaying = !isVideoPlaying;
+	toggle.innerText = isVideoPlaying ? "❚ ❚" : "►";
 }
 
-for (let range of ranges) {
-  range.addEventListener("change", handleRangeUpdate);
+volumn_btn.onchange = (e) => {
+	const val = e.target.value;
+	video.volume = val;
 }
 
-function togglePlay() {
-  if (video.paused) {
-    video.play();
-    toggle.innerText = "❚ ❚";
-  } else {
-    video.pause();
-    toggle.innerText = "►";
-  }
+playbackRate.onchange = (e) => {
+	const rate = e.target.value;
+	video.playbackRate = rate;
 }
 
-function handlerProgress() {
-  const currentProgress = (video.currentTime / video.duration) * 100;
-  progressBar.style.flexBasis = `${currentProgress}%`;
+rewind_btn.onclick = () => {
+	video.currentTime -= 10;
 }
 
-function forwardOrBackward(event) {
-  let element = event.target;
-  video.currentTime += parseFloat(element.attributes["data-skip"].value);
+forward_btn.onclick = () => {
+	video.currentTime += 25;
 }
 
-function handleRangeUpdate(event) {
-  let element = event.target;
-  video[element.name] = element.value;
-}
+
