@@ -1,84 +1,51 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const video = document.querySelector(".video");
-  const playButton = document.querySelector(".toggle");
-  const rewindButton = document.querySelector(".rewind");
-  const fastForwardButton = document.querySelector(".fast-forward");
-  const progress = document.querySelector(".progress");
-  const progressFilled = document.querySelector(".progress__filled");
-  const volumeSlider = document.querySelector(".volume");
-  const playbackSpeedSlider = document.querySelector(".playbackSpeed");
-  const speedBar = document.querySelector(".speed-bar");
+const inputs = document.querySelectorAll('.controls input');
+const player = document.querySelector(".player");
+const video = player.querySelector(".viewer");
+const progress = player.querySelector(".progress");
+const progressBar = player.querySelector(".progress__filled");
+const toggle = player.querySelector(".toggle");
+const skipButtons = player.querySelectorAll("[data-skip]");
+const ranges = player.querySelectorAll(".player__slider");
 
-  // Ensure all elements exist before attaching event listeners
-  if (video && playButton) {
-    playButton.addEventListener("click", togglePlay);
-    video.addEventListener("click", togglePlay);
-  }
-
-  if (video && progress) {
-    video.addEventListener("timeupdate", updateProgress);
-    progress.addEventListener("click", setVideoProgress);
-  }
-
-  if (rewindButton) {
-    rewindButton.addEventListener("click", rewind);
-  }
-
-  if (fastForwardButton) {
-    fastForwardButton.addEventListener("click", fastForward);
-  }
-
-  if (volumeSlider) {
-    volumeSlider.addEventListener("input", adjustVolume);
-  }
-
-  if (playbackSpeedSlider && speedBar) {
-    playbackSpeedSlider.addEventListener("input", adjustPlaybackSpeed);
-  }
-
-  // Function Definitions
-
-  // Toggle Play/Pause
-  function togglePlay() {
-    if (video.paused) {
-      video.play();
-      playButton.textContent = "❚ ❚";
-    } else {
-      video.pause();
-      playButton.textContent = "►";
+    function handleUpdate() {
+      const suffix = this.dataset.sizing || '';
+      document.documentElement.style.setProperty(`--${this.name}`, this.value + suffix);
     }
-  }
+toggle.addEventListener("click", togglePlay);
 
-  // Update Progress Bar
-  function updateProgress() {
-    const percent = (video.currentTime / video.duration) * 100;
-    progressFilled.style.width = `${percent}%`;
-  }
+    inputs.forEach(input => input.addEventListener('change', handleUpdate));
+    inputs.forEach(input => input.addEventListener('mousemove', handleUpdate));
+video.addEventListener("timeupdate", handlerProgress);
 
-  // Set Video Time on Progress Bar Click
-  function setVideoProgress(e) {
-    const newTime = (e.offsetX / progress.offsetWidth) * video.duration;
-    video.currentTime = newTime;
-  }
+for (let skip of skipButtons) {
+  skip.addEventListener("click", forwardOrBackward);
+}
 
-  // Rewind 10 seconds
-  function rewind() {
-    video.currentTime -= 10;
-  }
+for (let range of ranges) {
+  range.addEventListener("change", handleRangeUpdate);
+}
 
-  // Fast Forward 25 seconds
-  function fastForward() {
-    video.currentTime += 25;
+function togglePlay() {
+  if (video.paused) {
+    video.play();
+    toggle.innerText = "❚ ❚";
+  } else {
+    video.pause();
+    toggle.innerText = "►";
   }
+}
 
-  // Adjust Volume
-  function adjustVolume() {
-    video.volume = volumeSlider.value;
-  }
+function handlerProgress() {
+  const currentProgress = (video.currentTime / video.duration) * 100;
+  progressBar.style.flexBasis = `${currentProgress}%`;
+}
 
-  // Adjust Playback Speed
-  function adjustPlaybackSpeed() {
-    video.playbackRate = playbackSpeedSlider.value;
-    speedBar.textContent = `${playbackSpeedSlider.value}×`; // Update speed text
-  }
-});
+function forwardOrBackward(event) {
+  let element = event.target;
+  video.currentTime += parseFloat(element.attributes["data-skip"].value);
+}
+
+function handleRangeUpdate(event) {
+  let element = event.target;
+  video[element.name] = element.value;
+}
